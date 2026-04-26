@@ -12,9 +12,9 @@ import (
 )
 
 type PatchTaskRequest struct {
-	Title       core_http_types.Nullable[string] `json:"title"`
-	Description core_http_types.Nullable[string] `json:"description"`
-	Completed   core_http_types.Nullable[bool]   `json:"completed"`
+	Title       core_http_types.Nullable[string] `json:"title" swaggertype:"string" example:"Погулять с собакой"`
+	Description core_http_types.Nullable[string] `json:"description" swaggertype:"string" example:"Мне нужно успеть до 18:00"`
+	Completed   core_http_types.Nullable[bool]   `json:"completed" swaggertype:"boolean"`
 }
 
 func (r *PatchTaskRequest) Validate() error {
@@ -47,6 +47,24 @@ func (r *PatchTaskRequest) Validate() error {
 
 type PatchUserResponse TaskDTOResponse
 
+// PatchTask godoc
+// @Summary Обновить задачу
+// @Description ### Логика обновления полей (логика трёх состояний):
+// @Description 1. Поле не передано: `description` игнорируется и не меняется значение в БД
+// @Description 2. Явно передано значение: `"description": "сделать домашку в 12:00"` - устанавливается описание в БД
+// @Description 3. Передан null: `"description": null` - очищается поле в БД
+// @Description Ограничения: `title` и `completed` не могут быть null
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "ID изменяемой задачи"
+// @Param request body PatchTaskRequest true "тело запроса"
+// @Success 200 {object} PatchUserResponse "Успешно измененная задача"
+// @Failure 400 {object} core_http_response.ErrorResponse "bad request"
+// @Failure 404 {object} core_http_response.ErrorResponse "user not found"
+// @Failure 409 {object} core_http_response.ErrorResponse "conflict"
+// @Failure 500 {object} core_http_response.ErrorResponse "server error"
+// @Router /tasks/{id} [patch]
 func (h *TasksHTTPHandler) PatchTask(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)

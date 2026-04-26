@@ -1,0 +1,584 @@
+basePath: /api/v1
+definitions:
+  github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse:
+    properties:
+      error:
+        example: full error text
+        type: string
+      msg:
+        example: short message about error
+        type: string
+    type: object
+  internal_features_statistics_transport_http.GetStatisticsResponse:
+    properties:
+      задач_выполнено:
+        example: 10
+        type: integer
+      задач_создано:
+        example: 50
+        type: integer
+      процент_выполненых_задач:
+        example: 20
+        type: number
+      среднее_время_выполнения:
+        example: 1m30s
+        type: string
+    type: object
+  internal_features_tasks_transport_http.CreateTaskRequest:
+    properties:
+      author_user_id:
+        type: integer
+      description:
+        maxLength: 1000
+        minLength: 1
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - author_user_id
+    - title
+    type: object
+  internal_features_tasks_transport_http.CreateTaskResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.GetTaskResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.PatchTaskRequest:
+    properties:
+      completed:
+        type: boolean
+      description:
+        example: Мне нужно успеть до 18:00
+        type: string
+      title:
+        example: Погулять с собакой
+        type: string
+    type: object
+  internal_features_tasks_transport_http.PatchUserResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_tasks_transport_http.TaskDTOResponse:
+    properties:
+      author_user_id:
+        type: integer
+      completed:
+        type: boolean
+      completed_at:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      version:
+        type: integer
+    type: object
+  internal_features_users_transport_http.CreateUserRequest:
+    properties:
+      full_name:
+        example: Ivan_Ivanov
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone_number:
+        example: "+79990009900"
+        maxLength: 15
+        minLength: 10
+        type: string
+    required:
+    - full_name
+    type: object
+  internal_features_users_transport_http.CreateUserResponse:
+    properties:
+      full_name:
+        example: Ivan_Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79999999999"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  internal_features_users_transport_http.GetUserResponse:
+    properties:
+      full_name:
+        example: Ivan_Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79999999999"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  internal_features_users_transport_http.PatchUserRequest:
+    properties:
+      full_name:
+        example: Иван Иванов
+        type: string
+      phone_number:
+        example: "+79999999999"
+        type: string
+    type: object
+  internal_features_users_transport_http.PatchUserResponse:
+    properties:
+      full_name:
+        example: Ivan_Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79999999999"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+  internal_features_users_transport_http.UserDTOResponse:
+    properties:
+      full_name:
+        example: Ivan_Ivanov
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: "+79999999999"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
+host: 127.0.0.1:5050
+info:
+  contact: {}
+  description: REST-API schema
+  title: ToDoApp
+  version: "1.0"
+paths:
+  /statistics:
+    get:
+      parameters:
+      - description: Фильтрация статистики по конкретному пользователю
+        in: query
+        name: user_id
+        type: integer
+      - description: Начало промежутка рассмотрения статистики
+        in: query
+        name: from
+        type: string
+      - description: Конец промежутка рассмотрения статистики
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное получение статистики
+          schema:
+            $ref: '#/definitions/internal_features_statistics_transport_http.GetStatisticsResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Получение статистики по задачам
+      tags:
+      - statistics
+  /tasks:
+    get:
+      parameters:
+      - description: Фильтрация задач по id автора
+        in: query
+        name: user_id
+        type: integer
+      - description: Размер страницы с задачами
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение страницы с задачами
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список задач
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_tasks_transport_http.TaskDTOResponse'
+            type: array
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Список всех задач
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: успешно созданная задача
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.CreateTaskResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Создать задачу
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      parameters:
+      - description: ID удаляемой задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удаление задачи
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: task not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Удаление задачи
+      tags:
+      - tasks
+    get:
+      parameters:
+      - description: ID получаемой задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Задача успешно найдена
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.GetTaskResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: task not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Получить конкретную задачу
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        ### Логика обновления полей (логика трёх состояний):
+        1. Поле не передано: `description` игнорируется и не меняется значение в БД
+        2. Явно передано значение: `"description": "сделать домашку в 12:00"` - устанавливается описание в БД
+        3. Передан null: `"description": null` - очищается поле в БД
+        Ограничения: `title` и `completed` не могут быть null
+      parameters:
+      - description: ID изменяемой задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_tasks_transport_http.PatchTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешно измененная задача
+          schema:
+            $ref: '#/definitions/internal_features_tasks_transport_http.PatchUserResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: user not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: conflict
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Обновить задачу
+      tags:
+      - tasks
+  /users:
+    get:
+      parameters:
+      - description: Размер страницы с пользователями
+        in: query
+        name: limit
+        type: integer
+      - description: Смещение страницы с пользователями
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное получение списка пользователей
+          schema:
+            items:
+              $ref: '#/definitions/internal_features_users_transport_http.UserDTOResponse'
+            type: array
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Список всех существующих пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: statusOk
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.CreateUserResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Создать пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      parameters:
+      - description: ID удаляемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Успешное удаление пользователя
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: user not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Удаление пользователя
+      tags:
+      - users
+    get:
+      parameters:
+      - description: ID получаемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пользователь успешно найден
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.GetUserResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: user not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Получить конкретного пользователя
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        ### Логика обновления полей (логика трёх состояний):
+        1. Поле не передано: `phone_number` игнорируется и не меняется значение в БД
+        2. Явно передано значение: `"phone_number": "+79990000000"` - устанавливается новый номер в БД
+        3. Передан null: `"phone_number": null` - очищается поле в БД
+        Ограничения: `full_name` не может быть выставлено как null
+      parameters:
+      - description: ID изменяемого пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: тело запроса
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_features_users_transport_http.PatchUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное изменение пользователя
+          schema:
+            $ref: '#/definitions/internal_features_users_transport_http.PatchUserResponse'
+        "400":
+          description: bad request
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "404":
+          description: user not found
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "409":
+          description: conflict
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+        "500":
+          description: server error
+          schema:
+            $ref: '#/definitions/github_com_Hardbane_todoapp_internal_core_transport_http_response.ErrorResponse'
+      summary: Изменение пользователя
+      tags:
+      - users
+swagger: "2.0"

@@ -12,6 +12,31 @@ import (
 
 const requestIDHeader = "X-Request-ID"
 
+func CORS() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			allowedOrigins := map[string]struct{}{
+				"http://localhost:5050": {},
+			}
+
+			origin := r.Header.Get("Origin")
+
+			if _, ok := allowedOrigins[origin]; ok {
+				w.Header().Set("access-control-allow-origin", origin)
+				w.Header().Set("access-control-allow-methods", "GET, POST, PATCH, DELETE, OPTIONS")
+				w.Header().Set("access-control-allow-headers", "Content-Type, Authorization")
+			}
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func RequestID() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

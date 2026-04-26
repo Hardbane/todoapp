@@ -23,6 +23,9 @@ import (
 	users_postgres_repository "github.com/Hardbane/todoapp/internal/features/users/repository/postgres"
 	users_service "github.com/Hardbane/todoapp/internal/features/users/service"
 	users_transport_http "github.com/Hardbane/todoapp/internal/features/users/transport/http"
+	web_localfiles_repository "github.com/Hardbane/todoapp/internal/features/web/repository/localfiles"
+	web_service "github.com/Hardbane/todoapp/internal/features/web/service"
+	web_transport_http "github.com/Hardbane/todoapp/internal/features/web/transport/http"
 	"go.uber.org/zap"
 )
 
@@ -76,6 +79,11 @@ func main() {
 	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
 	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
 
+	logger.Debug("initializing feature", zap.String("feature", "web"))
+	webRepository := web_localfiles_repository.NewWebRepository()
+	webService := web_service.NewWebService(webRepository)
+	webTransportHTTP := web_transport_http.NewWebHTTPHandler(webService)
+
 	httpServer := core_http_server.NewHTTPServer(
 		core_http_server.NewConfigMust(),
 		logger,
@@ -91,6 +99,8 @@ func main() {
 	apiVersionRouterV1.RegisterRoutes(statisticsTransportHTTP.Routes()...)
 
 	httpServer.RegisterAPIRouters(apiVersionRouterV1)
+
+	httpServer.RegisterRoutes(webTransportHTTP.Routes()...)
 
 	httpServer.RegisterSwagger()
 

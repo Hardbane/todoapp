@@ -8,4 +8,6 @@ RUN CGO_ENABLED=0 go build -o /application/cmd/todoapp/exe /application/cmd/todo
 FROM alpine:3.23
 WORKDIR /application
 COPY --from=builder /application/cmd/todoapp/exe /application
+COPY --from=builder /application/public /application/public
+ENV PROJECT_ROOT=/application
 CMD ["/application/exe"]
